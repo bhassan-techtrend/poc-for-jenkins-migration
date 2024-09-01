@@ -71,16 +71,13 @@ name: SonarQube Scan
 
 on:
   workflow_call:
-    inputs:
+    secrets:
       sonar_project_key:
         required: true
-        type: string
       sonar_host_url:
         required: true
-        type: string
       sonar_token:
         required: true
-        type: string
 
 jobs:
   sonarqube:
@@ -108,11 +105,12 @@ jobs:
 
       - name: Run SonarQube scan
         env:
-          SONAR_HOST_URL: ${{ inputs.sonar_host_url }}
-          SONAR_TOKEN: ${{ inputs.sonar_token }}
+          SONAR_HOST_URL: ${{ secrets.sonar_host_url }}
+          SONAR_TOKEN: ${{ secrets.sonar_token }}
+          SONAR_PROJECT_KEY: ${{ secrets.sonar_project_key }}
         run: |
           sonar-scanner \
-            -Dsonar.projectKey=${{ inputs.sonar_project_key }} \
-            -Dsonar.host.url=${{ inputs.sonar_host_url }} \
-            -Dsonar.login=${{ inputs.sonar_token }}
+            -Dsonar.projectKey=${{ secrets.sonar_project_key }} \
+            -Dsonar.host.url=${{ secrets.sonar_host_url }} \
+            -Dsonar.login=${{ secrets.sonar_token }}
 
