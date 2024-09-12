@@ -1,8 +1,7 @@
-
 name: Reusable OWASP Dependency-Check
 
 on:
-  workflow_call:  # Defines this workflow as reusable
+  workflow_call:
     inputs:
       project_name:
         description: 'Project name for Dependency-Check'
@@ -12,46 +11,127 @@ on:
 jobs:
   depchecktest:
     runs-on: ubuntu-latest
-    name: depecheck_test
+    name: dependency_check_test
     steps:
+      # Step 1: Checkout the repository
       - name: Checkout
         uses: actions/checkout@v2
-      
-      # - name: Build project with Maven
-      #   run: mvn clean install
-      
+
       # Step 2: Setup .NET environment
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '7.0.x' # Set the .NET version based on your project
+          dotnet-version: '7.0.x'  # Set the .NET version based on your project
 
-      # Step 3: Restore NuGet packages
+      # Step 3: Find the .sln file dynamically
+      - name: Find .sln file
+        id: find-sln
+        run: echo "::set-output name=sln_path::$(find . -name '*.sln' | head -n 1)"
+
+      # Step 4: Restore NuGet packages using the found .sln file
       - name: Restore NuGet packages
-        run: dotnet restore src/NopCommerce.sln
+        run: dotnet restore ${{ steps.find-sln.outputs.sln_path }}
 
-      # Step 4: Build the project
+      # Step 5: Build the project using the found .sln file
       - name: Build the project
-        run: dotnet build src/NopCommerce.sln --configuration Release
+        run: dotnet build ${{ steps.find-sln.outputs.sln_path }} --configuration Release
 
-      # Step 5: Run OWASP Dependency-Check
-
-      - name: Depcheck
+      # Step 6: Run OWASP Dependency-Check
+      - name: OWASP Dependency-Check
         uses: dependency-check/Dependency-Check_Action@main
-        id: Depcheck
+        id: depcheck
         with:
-          project: ${{ inputs.project_name }} 
+          project: ${{ inputs.project_name }}  # Use the project name passed as input
           path: '.'
           format: 'HTML'
           out: 'reports'
-          scanpath: '**/*.csproj'  # Scan the .csproj files for .NET dependencies
           args: >
             --failOnCVSS 7
             --enableRetired
 
-      # Step 6: Upload the OWASP report as an artifact
-      - name: Upload Test results
-        uses: actions/upload-artifact@master
+      # Step 7: Upload the OWASP report as an artifact
+      - name: Upload OWASP Dependency-Check report
+        uses: actions/upload-artifact@v2
         with:
           name: Depcheck report
           path: ${{ github.workspace }}/reports
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# name: Reusable OWASP Dependency-Check
+
+# on:
+#   workflow_call:  # Defines this workflow as reusable
+#     inputs:
+#       project_name:
+#         description: 'Project name for Dependency-Check'
+#         required: true
+#         type: string
+
+# jobs:
+#   depchecktest:
+#     runs-on: ubuntu-latest
+#     name: depecheck_test
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v2
+      
+#       # - name: Build project with Maven
+#       #   run: mvn clean install
+      
+#       # Step 2: Setup .NET environment
+#       - name: Setup .NET
+#         uses: actions/setup-dotnet@v3
+#         with:
+#           dotnet-version: '7.0.x' # Set the .NET version based on your project
+
+#       # Step 3: Restore NuGet packages
+#       - name: Restore NuGet packages
+#         run: dotnet restore src/NopCommerce.sln
+
+#       # Step 4: Build the project
+#       - name: Build the project
+#         run: dotnet build src/NopCommerce.sln --configuration Release
+
+#       # Step 5: Run OWASP Dependency-Check
+
+#       - name: Depcheck
+#         uses: dependency-check/Dependency-Check_Action@main
+#         id: Depcheck
+#         with:
+#           project: ${{ inputs.project_name }} 
+#           path: '.'
+#           format: 'HTML'
+#           out: 'reports'
+#           scanpath: '**/*.csproj'  # Scan the .csproj files for .NET dependencies
+#           args: >
+#             --failOnCVSS 7
+#             --enableRetired
+
+#       # Step 6: Upload the OWASP report as an artifact
+#       - name: Upload Test results
+#         uses: actions/upload-artifact@master
+#         with:
+#           name: Depcheck report
+#           path: ${{ github.workspace }}/reports
