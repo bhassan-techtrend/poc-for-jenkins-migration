@@ -51,7 +51,7 @@ jobs:
 
       # Step 7: Upload the OWASP report as an artifact
       - name: Upload OWASP Dependency-Check report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@master
         with:
           name: Depcheck report
           path: ${{ github.workspace }}/reports
