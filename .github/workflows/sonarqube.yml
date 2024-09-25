@@ -3,8 +3,6 @@ name: SonarQube analysis
 on:
   workflow_call:
     secrets:
-      sonar_project_key:
-        required: true
       sonar_host_url:
         required: true
       sonar_token:
@@ -29,4 +27,3 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROECT_KEY }}
