@@ -1,0 +1,29 @@
+name: SonarQube analysis
+
+on:
+  workflow_call:
+    secrets:
+      sonar_host_url:
+        required: true
+      sonar_token:
+        required: true
+    inputs:
+      sonar_dir:
+        required: true
+        type: string
+
+jobs:
+  sonarqube:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        # Disabling shallow clones is recommended for improving the relevancy of reporting
+        fetch-depth: 0
+    - name: SonarQube Scan
+      uses: sonarsource/sonarqube-scan-action@v2.3.0 # Ex: v2.1.0, See the latest version at https://github.com/marketplace/actions/official-sonarqube-scan
+      with:
+        projectBaseDir: ${{ inputs.sonar_dir }}
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
